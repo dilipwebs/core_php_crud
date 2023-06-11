@@ -2,23 +2,126 @@
 session_start();
 require_once('db_con.php');
 
+/* if (isset($_POST['regist'])) {
+
+    $path = 'uploads/';
+    
+    $extension = pathinfo($_FILES['profile']['name'], PATHINFO_EXTENSION);
+    $file_name = $_POST['fname'].'_'.date('YmdHis').'.'.$extension;
+    $profile =     (file_exists($_FILES['profile']['tmp_name'])) ? $file_name : ''; 
+
+    
+    $insert_data = [
+                        'fname'     =>  mysqli_real_escape_string($con, trim($_POST['fname'])),
+                        'lname'     =>   mysqli_real_escape_string($con, trim($_POST['lname'])),
+                        'email'     =>   mysqli_real_escape_string($con, trim($_POST['email'])),
+                        'pass'      =>   mysqli_real_escape_string($con, trim($_POST['password'])),
+                        'contact'   =>   mysqli_real_escape_string($con, trim($_POST['contact'])),
+                        'gender'    =>   mysqli_real_escape_string($con, trim($_POST['gender'])),
+                        'address'   =>   mysqli_real_escape_string($con, trim($_POST['address'])),
+                        'state'     =>   mysqli_real_escape_string($con, trim($_POST['state'])),
+                        'profile'   =>  $profile,
+                        'hobbies'   =>  implode(',', $_POST['hobbies']),
+                ];
+    $cols   = implode(",", array_keys($insert_data));
+    $vals   = implode(" ',' ", array_values($insert_data));
+
+    $sql = "INSERT INTO users ($cols) VALUES ('$vals') ";
+    $insert = $con->query($sql);
+               
+    if ($insert) {
+
+        if (!is_null($profile)) {
+            move_uploaded_file($_FILES['profile']['tmp_name'],$path.$file_name);
+        }
+
+        $response = [
+                            'type' => 'success',
+                            'msg'   => 'Data inserted successfully.'
+                    ];    
+
+    }else{
+        $response = [
+            'type' => 'success',
+            'msg'   => 'Data inserted successfully.'
+    ]; 
+    
+    }
+} */
+?>
+
+<?php
 if (isset($_POST['regist'])) {
 
-    $insert_data = [
-                        'fname'     => $_POST['fname'],
-                        'lname'     => $_POST['lname'],
-                        'email'     => $_POST['email'],
-                        'pass'      => $_POST['password'],
-                        'contact'   => $_POST['contact'],
-                        'gender'    => $_POST['gender'],
-                        'address'   => $_POST['address'],
-                        'state'     => $_POST['state'],
-                        'profile'   => $_POST['profile'],
-                        'hobbies'   => implode(',', $_POST['hobbies']),
-                ];
-}
+    $allowed_file_types = array('image/jpeg', 'image/png', 'image/gif'); // Allowed file types
+    $max_file_size = 1 * 1024 * 1024; // 1 * 1024byte * 1024kilobyte
 
+    if (!empty($_FILES['profile']['tmp_name'])) {
+
+        $file_size = $_FILES['profile']['size'];
+        $file_type = $_FILES['profile']['type'];
+    
+        if ($file_size > $max_file_size) {
+            $response = [
+                'type' => 'warning',
+                'msg' => 'File size exceeds the maximum limit of 1MB.'
+            ];
+            // Handle the error as needed
+        } elseif (!in_array($file_type, $allowed_file_types)) {
+            $response = [
+                'type' => 'warning',
+                'msg' => 'Invalid file type. Only JPEG, PNG, and GIF images are allowed.'
+            ];
+            // Handle the error as needed
+        } else {
+
+            $path = 'uploads/';
+
+            $insert_data = [];
+            $post_loop_exclude_keys = ['regist','hobbies'];
+
+            foreach ($_POST as $key => $value) {
+                if (!in_array($key,$post_loop_exclude_keys)) { // Exclude the 'regist' key
+                    $insert_data[$key] = mysqli_real_escape_string($con, trim($value));
+                }
+            }
+
+            $extension = pathinfo($_FILES['profile']['name'], PATHINFO_EXTENSION);
+            $file_name = $insert_data['fname'] . '_' . date('YmdHis') . '.' . $extension;
+            $profile = (file_exists($_FILES['profile']['tmp_name'])) ? $file_name : '';
+            $insert_data['profile'] = $profile;
+
+            // checkbox hobbies array into string
+            $insert_data['hobbies'] = mysqli_real_escape_string($con, trim(implode(',', $_POST['hobbies'])));
+
+            $cols = implode(",", array_keys($insert_data));
+            $vals = "'" . implode("','", array_values($insert_data)) . "'";
+
+            $sql = "INSERT INTO users ($cols) VALUES ($vals)";
+            $insert = $con->query($sql);
+
+            if ($insert) {
+
+                if (!is_null($profile)) {
+                    move_uploaded_file($_FILES['profile']['tmp_name'], $path . $file_name);
+                }
+
+                $response = [
+                    'type' => 'success',
+                    'msg' => 'Data inserted successfully.'
+                ];
+            } else {
+                $response = [
+                    'type' => 'warning',
+                    'msg' => 'Error inserting data.'
+                ];
+            }
+        } 
+    }
+}
 ?>
+
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -44,6 +147,14 @@ if (isset($_POST['regist'])) {
         <div class="album py-5 bg-light">
             <div class="row h-100 justify-content-center align-items-center">
                 <div class="card border-success" style="max-width: 65rem;padding: 2%;">
+
+                <?php if(isset($response)){?>
+                    
+                    <div class="alert alert-<?php echo $response['type']; ?>" role="alert">
+                    <?php echo $response['msg']; ?>
+                    </div>
+                <?php } ?>   
+
                     <h2> Registration </h2> <hr>
                     <div class="card-body">
                         <form method="post" enctype="multipart/form-data">
@@ -63,14 +174,14 @@ if (isset($_POST['regist'])) {
                                     <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required="">
                                 </div>
                                 <div class="col">
-                                    <label for="password" class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="password" name="password" placeholder="password" required="">
+                                    <label for="pass" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="pass" name="pass" placeholder="password" required="">
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label for="mobile" class="form-label">Contact Number</label>
-                                    <input type="tel" class="form-control" id="mobile" name="mobile" placeholder="1234567890" required="">
+                                    <label for="contact" class="form-label">Contact Number</label>
+                                    <input type="tel" class="form-control" id="contact" name="contact" placeholder="1234567890" required="">
                                 </div>
                                 <div class="col">
                                     <label for="gender" class="form-label">Gender</label><br>
