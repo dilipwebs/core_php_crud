@@ -138,7 +138,7 @@ if (isset($_POST['regist'])) {
                     <a class="navbar-brand" href="#">Learn</a>
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     </ul>
-                    <a  class="btn btn-success" href="login.html">Login</a>
+                    <a  class="btn btn-success" href="login.php">Login</a>
                     <!-- <a  class="btn btn-success" href="registration.html">Register</a> -->
                 </div>
             </div>
