@@ -1,3 +1,24 @@
+<?php
+session_start();
+require_once('db_con.php');
+
+if (isset($_POST['regist'])) {
+
+    $insert_data = [
+                        'fname'     => $_POST['fname'],
+                        'lname'     => $_POST['lname'],
+                        'email'     => $_POST['email'],
+                        'pass'      => $_POST['password'],
+                        'contact'   => $_POST['contact'],
+                        'gender'    => $_POST['gender'],
+                        'address'   => $_POST['address'],
+                        'state'     => $_POST['state'],
+                        'profile'   => $_POST['profile'],
+                        'hobbies'   => implode(',', $_POST['hobbies']),
+                ];
+}
+
+?>
 <!DOCTYPE html>
 <html>
     <head>
