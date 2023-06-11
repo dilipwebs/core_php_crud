@@ -3,8 +3,9 @@ session_start();
 require_once('db_con.php');
 
 if (isset($_POST['login'])) {
-    $email = mysqli_real_escape_string($con, trim($_POST['email'])); 
-    $pass = mysqli_real_escape_string($con, trim($_POST['pass']));
+
+    $email  =   mysqli_real_escape_string($con, trim($_POST['email'])); 
+    $pass   =   mysqli_real_escape_string($con, trim($_POST['pass']));
 
     $sql    =  "SELECT * FROM users WHERE email ='$email' AND pass = '$pass' ";
     $exec   =   $con->query($sql);
